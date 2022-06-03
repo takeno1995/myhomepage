@@ -215,6 +215,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#54d0dd', end
 }
 #about img {
 	float: right;
+	width : 25vw ; /* 画面幅の50％ */
 }
 #about p {
 	margin-bottom: 30px;
