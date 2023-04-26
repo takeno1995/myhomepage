@@ -200,6 +200,10 @@ th {
             box-shadow: none !important;
   }
   a,
+  a:link {
+    color:#414a52;
+    text-decoration: underline;
+  }
   a:visited {
     text-decoration: underline;
   }
