@@ -85,6 +85,8 @@ hr {
 }
 /* Navigation */
 #menu {
+	font-size: 30px;
+	color: rgba(255,255,255,0.9);
 	padding: 20px;
 	transition: all 0.2s;
 }
@@ -204,8 +206,8 @@ header .intro-text {
 	z-index: 10;
 	/* padding-top: 250px;
 	padding-bottom: 200px; */
-	padding-top: 80px;
-	padding-bottom: 40px;
+	padding-top: 50px;
+	padding-bottom: 50px;
 }
 /* About Section */
 #about {
@@ -247,6 +249,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#54d0dd', end
 }
 #publication ol {
 	color: #ffffff;
+	font-family: 'Times New Roman', Times, serif;
+	font-size: 16px;
 }
 
 /* presentation Section */
@@ -267,6 +271,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#54d0dd', end
 }
 #presentation ol {
 	color: #414a52;
+	font-family: 'Times New Roman', Times, serif;
+	font-size: 16px;
 }
 
 /* others Section */
