@@ -555,7 +555,7 @@ a:focus, .btn:focus, .btn:active:focus, .btn.active:focus, .btn.focus, .btn:acti
     }
 
     .navbar-nav {
-        margin: 0 -15px;
+        margin: 0 -25px;
     }
 
     .navbar-collapse.collapse {
@@ -566,6 +566,11 @@ a:focus, .btn:focus, .btn:active:focus, .btn.active:focus, .btn.focus, .btn:acti
     .navbar-right {
         float: right;
     }
+
+    .navbar-nav.navbar-right:last-child {
+        margin-right: -25px;
+    }
+
     .navbar-toggle {
         display: none;
     }
