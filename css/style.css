@@ -298,6 +298,12 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#54d0dd', end
 	color: #ffffff;
 }
 
+#others a {
+	color: #54d0dd;
+	text-decoration: underline;
+	font-weight: 550;
+}
+
 
 /* portfolio Section */
 #portfolio {
