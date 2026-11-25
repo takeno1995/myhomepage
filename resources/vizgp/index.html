@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="事前分布、訓練データ、事後分布からガウス過程を理解する日本語のインタラクティブ可視化。">
+  <title>ガウス過程の可視化</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="gp.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+<main>
+  <header class="page-header">
+    <div><h1>ガウス過程の可視化</h1></div>
+    <a class="home" href="../index.html">参考資料に戻る</a>
+  </header>
+
+  <section class="controls" aria-label="モデルと表示する点の設定">
+    <div class="model-controls"><div class="control-title"><h2>カーネル</h2><label class="combination">組み合わせ <select id="combination"><option value="single">単独：k₁</option><option value="sum">和：k₁ + k₂</option><option value="product">積：k₁ × k₂</option></select></label></div>
+    <div id="kernels" class="kernel-grid"></div></div><div class="data-controls">
+      <div class="data-parameters"><div><label for="data-count">訓練データ数 <output id="count-value" for="data-count">8</output></label><input id="data-count" type="range" min="0" max="40" step="1" value="8">
+      </div><div><label for="noise">観測ノイズの標準偏差 σₙ <output id="noise-value" for="noise">0.15</output></label><input id="noise" type="range" min="0" max="1.5" step="0.05" value="0.15"></div></div>
+      <div class="buttons"><button id="new-data">訓練データを再生成</button><button id="new-target">ターゲット関数とデータを再生成</button></div>
+
+    </div>
+    <div class="shared-controls">
+      <fieldset class="point-controls"><legend class="sr-only">選択する2点（事前・事後で共通）</legend>
+        <label class="point-one">x₁ <input id="x1" type="range" min="0" max="240" step="1" value="80"><output for="x1" id="x1-value">2.00</output></label>
+        <label class="point-two">x₂ <input id="x2" type="range" min="0" max="240" step="1" value="160"><output for="x2" id="x2-value">4.00</output></label>
+      </fieldset>
+      <div class="sample-controls"><div class="buttons"><button id="resample">サンプルパスを再生成</button><button id="animate" class="primary" aria-pressed="false">自動再生成を開始</button></div></div>
+    </div>
+  </section>
+  <p id="status" class="status" role="status" aria-live="polite">初期化しています…</p>
+  <noscript>この可視化には JavaScript を有効にしてください。</noscript>
+
+  <div class="visualization">
+  <section class="distribution" aria-labelledby="prior-heading">
+    <div class="section-title"><div><h2 id="prior-heading">事前分布</h2><p>データを観測する前の、関数に対する仮定です。</p></div><span class="formula">f ∼ GP(0, k)</span></div>
+    <div class="plot-grid"><figure><svg id="prior-plot" viewBox="0 0 760 290" role="img" aria-label="事前分布の平均、95%区間、3本のサンプルパス"></svg></figure><figure class="joint"><h3 class="sr-only">2点の関数値の同時分布</h3><svg id="prior-joint" viewBox="0 0 340 290" role="img" aria-label="事前分布の2変量正規分布の等高線"></svg><figcaption id="prior-cov" class="covariance"></figcaption></figure></div>
+  </section>
+
+  <section class="distribution target-section" aria-labelledby="target-heading">
+    <div class="section-title"><div><h2 id="target-heading">ターゲット関数と訓練データ</h2><p>同じ事前分布から引いた1本の関数を、ノイズを加えて観測します。</p></div><span class="formula">yᵢ = f(xᵢ) + εᵢ</span></div>
+    <div class="plot-grid"><figure><svg id="target-plot" viewBox="0 0 760 290" role="img" aria-label="ターゲット関数とそこから生成した訓練データ"></svg></figure><div class="target-note"><span>ターゲット関数は事前分布から生成</span><math display="block" aria-label="観測値はターゲット関数の値と観測ノイズの和"><msub><mi>y</mi><mi>i</mi></msub><mo>=</mo><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>+</mo><msub><mi>ε</mi><mi>i</mi></msub></math><math display="block"><msub><mi>ε</mi><mi>i</mi></msub><mo>∼</mo><mi mathvariant="normal">N</mi><mo>(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mi>n</mi><mn>2</mn></msubsup><mo>)</mo></math><span>カーネル変更時にターゲット関数とデータも更新</span></div></div>
+  </section>
+
+  <section class="distribution" aria-labelledby="posterior-heading">
+    <div class="section-title"><div><h2 id="posterior-heading">事後分布</h2><p>訓練データで条件付けした、関数の分布です。</p></div><span class="formula">f | X, y ∼ GP(m, kₚ)</span></div>
+    <div class="plot-grid"><figure><svg id="posterior-plot" viewBox="0 0 760 290" role="img" aria-label="事後分布の平均、95%区間、3本のサンプルパス、訓練データ"></svg></figure><figure class="joint"><h3 class="sr-only">2点の関数値の同時分布</h3><svg id="posterior-joint" viewBox="0 0 340 290" role="img" aria-label="事後分布の2変量正規分布の等高線"></svg><figcaption id="posterior-cov" class="covariance"></figcaption></figure></div>
+  </section>
+
+  </div>
+  <div class="legend" aria-label="グラフの凡例"><span><i class="line mean"></i>平均</span><span><i class="band"></i>各点の95%区間</span><span><svg class="sample" viewBox="0 0 28 8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4" stroke="currentColor" stroke-width="1.7" stroke-dasharray="7 3 1 3" stroke-linecap="round"/></svg>サンプルパス（3本）</span><span><i class="line target"></i>ターゲット関数</span><span><i class="dot"></i>訓練データ</span></div>
+  <details class="explanation"><summary>図の見方と計算について</summary>
+    <p>x₁（緑）とx₂（紫）の位置に描く曲線は、それぞれの関数値の周辺正規分布です。同じ分布を、右の同時分布の上側（x₁）と右側（x₂）にも表示します。曲線の張り出す高さは見やすい大きさに揃えてあり、関数値方向の幅が不確実性を示します。分散がほぼ0の場合は短い線で表示します。</p>
+    <p>図にマウスを重ねると、小さな棒が指している関数値を左右で対応させます。左図の上向きは、同時分布の上側では右向き、右側では上向きに対応します。x₁・x₂やサンプルパスは、マウスを動かしても変わりません。</p>
+    <p>左の縦線は選択した入力 x₁ と x₂ です。右の横軸は f(x₁)、縦軸は f(x₂) を表します。同じ色の点とサンプルパスが対応します。等高線は、2変量正規分布の確率質量の50%・80%・95%を囲む楕円です。</p>
+    <p>左の帯は各入力での平均 ± 1.96 × 標準偏差です。関数全体が95%の確率で帯に入る、という意味ではありません。事後分布と右の同時分布は観測ノイズを含まない関数 f の分布です。右の事前・事後の座標範囲は共通です。</p>
+    <p>ターゲット関数は平均0の事前分布から生成します。訓練入力は区間 [0, 6] の241点の表示グリッドから重複なしで無作為に選び、独立な正規ノイズ εᵢ ∼ N(0, σₙ²) を加えます。ノイズを変更すると同じ入力位置・同じノイズの乱数を使って大きさを変更します。データ数を変更すると訓練データを生成し直します。</p>
+    <p>選択する2点を動かしても、サンプルパスやターゲット関数は変わりません。自動再生成では補間や変形をせず、独立なサンプルを引き直します。ブラウザのタブが非表示の間は自動再生成を一時停止します。</p>
+  </details>
+  <footer><a href="https://www.infinitecuriosity.org/vizgp/">参考サイト：Infinite Curiosity</a><span> · </span><a href="https://github.com/st--/interactive-gp-visualization/">参考ソース（ST John）</a></footer>
+</main>
+</body>
+</html>

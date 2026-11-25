@@ -1,0 +1,75 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><title>ガウス過程のテスト</title>
+<h1>ガウス過程の数値計算・操作テスト</h1><pre id="results">実行中…</pre>
+<iframe id="app" src="index.html" style="width:1200px;height:1400px" title="テスト対象の可視化"></iframe>
+<script src="gp.js"></script><script src="test-numerics.js"></script>
+<script>
+document.querySelector('#app').addEventListener('load', async () => {
+  const output = document.querySelector('#results');
+  try {
+    const frame = document.querySelector('#app'), doc = frame.contentDocument, win = frame.contentWindow;
+    const $ = id => doc.getElementById(id), results = [...numericalResults];
+    const assert = (ok, message) => {if (!ok) throw new Error(message);};
+    const shape = id => $(id).querySelector('[data-kind="target"], [data-kind="sample"]').getAttribute('d');
+    const data = () => [...$('target-plot').querySelectorAll('circle')].map(n => [n.getAttribute('cx'), n.getAttribute('cy')]);
+    const change = (id, value, event = 'change') => {$(id).value = value; $(id).dispatchEvent(new win.Event(event, {bubbles:true}));};
+    const good = () => assert(!$('status').classList.contains('error'), $('status').textContent);
+    good();
+    assert($('prior-plot').querySelectorAll('[data-kind="sample"]').length === 3, '事前サンプル数');
+    assert($('posterior-plot').querySelectorAll('[data-kind="sample"]').length === 3, '事後サンプル数');
+    results.push('事前・事後のサンプルは3本固定');
+    // Selected points only redraw; none of the sampled functions should change.
+    let target = shape('target-plot'), prior = shape('prior-plot'), points = JSON.stringify(data());
+    assert(doc.querySelectorAll('[data-kind="marginal"]').length === 8, '左右・事前事後の周辺分布');
+    const left = $('prior-plot'), right = $('prior-joint');
+    const leftBox = left.querySelector('rect'), rightBox = right.querySelector('rect');
+    const pointer = (svg, x, y) => {
+      const pt = new win.DOMPoint(x, y).matrixTransform(svg.getScreenCTM());
+      svg.dispatchEvent(new win.PointerEvent('pointermove', {clientX: pt.x, clientY: pt.y}));
+    };
+    const attr = (node, name) => Number(node.getAttribute(name));
+    pointer(left, attr(leftBox, 'x') + attr(leftBox, 'width') / 2, attr(leftBox, 'y') + attr(leftBox, 'height') / 4);
+    const topBar = right.querySelector('[data-kind="value-indicator"][data-point="0"]');
+    const sideBar = right.querySelector('[data-kind="value-indicator"][data-point="1"]');
+    assert(attr(topBar, 'x1') > attr(rightBox, 'x') + attr(rightBox, 'width') / 2, '左図の上向きが同時分布の右向きに対応しない');
+    assert(attr(sideBar, 'y1') < attr(rightBox, 'y') + attr(rightBox, 'height') / 2, '右側の棒の対応');
+    pointer(right, attr(rightBox, 'x') + attr(rightBox, 'width') / 4, attr(rightBox, 'y') + attr(rightBox, 'height') * .75);
+    for (const bar of left.querySelectorAll('[data-kind="value-indicator"]')) assert(attr(bar, 'y1') > attr(leftBox, 'y') + attr(leftBox, 'height') / 2, '右図から左図への対応');
+    assert(shape('target-plot') === target && shape('prior-plot') === prior && JSON.stringify(data()) === points, 'マウス操作で関数やデータが変化');
+    results.push('8つの周辺分布と、関数・データを保持した双方向の目印');
+    change('x1', 140, 'input'); change('x2', 140, 'input'); good();
+    assert(shape('target-plot') === target && shape('prior-plot') === prior, '点の移動で関数が変わった');
+    assert(!doc.querySelector('svg').innerHTML.includes('NaN'), '非数の描画');
+    results.push('2点の選択で関数を保持し、同一点でも描画');
+    // Keep scales stable with zero-variance test below for strict path comparisons.
+    change('kernel-0-variance', 0); good();
+    target = shape('target-plot'); points = JSON.stringify(data());
+    $('resample').click(); good();
+    assert(shape('target-plot') === target && JSON.stringify(data()) === points, '再生成がtarget/dataを変更');
+    $('animate').click();
+    assert($('animate').getAttribute('aria-pressed') === 'true', '自動開始に失敗');
+    await new Promise(resolve => setTimeout(resolve, 1650)); good();
+    assert(shape('target-plot') === target && JSON.stringify(data()) === points, '自動再生成がtarget/dataを変更');
+    $('animate').click(); assert($('animate').getAttribute('aria-pressed') === 'false', '自動停止に失敗');
+    results.push('手動・自動再生成でターゲット関数と訓練データを保持');
+    change('kernel-0-variance', 1); good();
+    target = shape('target-plot'); change('kernel-0', 'matern32'); good();
+    assert(shape('target-plot') !== target, 'カーネル変更でtargetが更新されない');
+    results.push('カーネル変更でターゲット関数を更新');
+    for (const mode of ['sum', 'product', 'single']) {change('combination', mode); good();}
+    results.push('単独・和・積を切り替え可能');
+    change('data-count', 0); good(); assert(data().length === 0, 'データ0件');
+    change('noise', 0); change('data-count', 40); good(); assert(data().length === 40, 'データ40件');
+    change('kernel-0', 'linear'); good(); change('kernel-0', 'periodic'); good();
+    results.push('データ0件・40件、ノイズ0、低ランクのカーネル');
+    $('new-data').click(); good(); $('new-target').click(); good();
+    assert([...doc.querySelectorAll('svg path')].every(p => !/NaN|Infinity/.test(p.getAttribute('d'))), '不正なパス');
+    results.push('訓練データ・ターゲット関数の再生成');
+    frame.style.width = '390px';
+    await new Promise(resolve => setTimeout(resolve, 100));
+    assert(doc.documentElement.scrollWidth <= doc.documentElement.clientWidth, `スマートフォン幅で横にはみ出し：${doc.documentElement.scrollWidth} / ${doc.documentElement.clientWidth}`);
+    results.push('390px幅で横スクロールなし');
+    output.textContent = `PASS: ${results.length} tests\n` + results.map(s => '✓ ' + s).join('\n');
+    document.title = 'PASS ガウス過程のテスト';
+  } catch (error) {output.textContent = 'FAIL: ' + error.stack; document.title = 'FAIL ガウス過程のテスト';}
+});
+</script></html>

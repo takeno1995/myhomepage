@@ -1,0 +1,28 @@
+:root {
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  color: #414a52;
+  background: #fff;
+  font-size: 16px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+header { background: #343b42; padding: 18px max(24px, calc((100% - 960px) / 2)); }
+header a { color: #fff; text-decoration: none; }
+main { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+nav { font-size: .875rem; margin-bottom: 30px; color: #66717b; }
+nav span { margin-left: 8px; }
+a { color: #245e80; text-underline-offset: 4px; }
+a:hover { color: #173f57; }
+a:focus-visible { outline: 3px solid #54d0dd; outline-offset: 4px; }
+h1 { font-size: 2rem; font-weight: 500; margin: 0 0 16px; }
+h2 { font-size: 1.25rem; font-weight: 500; border-bottom: 1px solid #dbe3e9; padding-bottom: 12px; margin: 36px 0 0; }
+h3 { font-size: 1.125rem; font-weight: 600; margin: 0 0 12px; }
+p { line-height: 1.8; margin: 8px 0; }
+.intro { color: #61717f; }
+article { padding: 24px 0; border-bottom: 1px solid #e7edf2; }
+.note { color: #61717f; font-size: .875rem; }
+@media (max-width: 600px) {
+  header { padding: 16px 20px; }
+  main { padding: 24px 20px; }
+}
